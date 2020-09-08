@@ -5,9 +5,13 @@ import time
 import random
 
 import pyautogui
-from pyautogui import press, typewrite, hotkey
+from pyautogui import press
 
-letter_count = 4
+LETTER_COUNT = 4
+TIME_MIN = 0.120
+TIME_MAX = 0.500
+TIME_Z_MIN = 7.5
+TIME_Z_MAX = 10.5
 
 global isSequence
 isSequence = False
@@ -23,8 +27,8 @@ def check_frame(frame):
     threshold = 0.99
     letters = []
 
-    for i in range(letter_count):
-        templates.append(cv.imread("src/letter{}.png".format(i+1), 0))
+    for i in range(LETTER_COUNT):
+        templates.append(cv.imread("img/letter{}.png".format(i+1), 0))
         templ_shapes.append(templates[i].shape[::-1])
 
     a = 1
@@ -53,7 +57,7 @@ def press_sequence(array):
     print("Wciskam sekwencje")
     global isSequence
     for letter in array:
-        time.sleep(random.uniform(0.3, 0.9))
+        time.sleep(random.uniform(TIME_MIN, TIME_MAX))
         if letter[1]==1:
             press("a")
             print("a")
@@ -66,7 +70,7 @@ def press_sequence(array):
         elif letter[1]==4:
             press("s")
             print("s")
-    waitRandom = random.uniform(8.5, 10.9)
+    waitRandom = random.uniform(TIME_Z_MIN, TIME_Z_MAX)
     print("Klikam Z za sekund: "+str(waitRandom))
     time.sleep(waitRandom)
     press("z")
@@ -82,9 +86,9 @@ def capture_video():
         check_frame(frame)
         cv.destroyAllWindows()
 
-
 if __name__ == '__main__':
     print('Rozpoczynam działanie programu...')
     capture_video()
+
 
 
