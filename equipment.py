@@ -1,16 +1,25 @@
 import cv2 as cv
 import numpy as np
 import threading
+import keyboard
+import time
+import sys
 import pyautogui
+
 from pyautogui import press
 
 DIGITS_COUNT = 12
 FISH_COUNT = 3
 
-def check_frame():
-    img_rgb = cv.imread('img/eq2.png')
+global isMouseMove, lastFishCount, thread
+isMouseMove = False
+lastFishCount = 0
+
+'''
+def check_trunk(frame):
+    img_rgb = frame
     height, width, _ = img_rgb.shape
-    img_rgb = img_rgb[int(height / 2):int(height), int(width / 4):int(width * 0.66)]
+    img_rgb = img_rgb[int(height / 2):int(height), int(width / 4):int(width * 0.75)]
 
     img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
     templates = []
@@ -35,10 +44,8 @@ def check_frame():
                 letters.append([pt[0],a])
         a=a+1
 
-    show_sequence(letters)
-    cv.imwrite('res.png', img_rgb)
-
-
+    #cv.imwrite('res.png', img_rgb)
+    show_sequence(letters) #tutaj return
 
 def show_sequence(array):
     list_of_digits = []
@@ -71,15 +78,17 @@ def show_sequence(array):
 
     if len(weights_array)==4:
         print(weights_array)
+        #return weights_array
     else:
         print("[ERROR]Nie udalo sie odczytac pojemnosci przedmiotow")
+        #return None
+'''
 
 def find_fish(frame):
-    #img_rgb = cv.imread('img/eq1.png')
     img_rgb = frame
-    height, width, _ = img_rgb.shape
 
-    cv.rectangle(img_rgb, (0,0), (width, int(height / 4)), (255, 255, 255), -1)
+    height, width, _ = img_rgb.shape
+    cv.rectangle(img_rgb, (0, 0), (width, int(height / 4)), (255, 255, 255), -1)
     cv.rectangle(img_rgb, (0, 0), (int(width/4), height), (255, 255, 255), -1)
     cv.rectangle(img_rgb, (int(width/2), 0), (width,height), (255, 255, 255), -1)
 
@@ -88,6 +97,7 @@ def find_fish(frame):
     templ_shapes = []
     threshold = 0.99
     fish_point = []
+    global isMouseMove
 
     for i in range(FISH_COUNT):
         templates.append(cv.imread("img/fishes/{}.png".format(i+1), 0))
@@ -98,26 +108,54 @@ def find_fish(frame):
         loc = np.where(res >= threshold)
         w, h = template.shape[::-1]
         for pt in zip(*loc[::-1]):
+            isMouseMove = True
             cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 0)
             fish_point.append((pt[0], pt[1]))
 
     if fish_point:
+        fish_point.sort()
         print("JEST RYBA DO PRZENIESIENIA "+str(len(fish_point))+str(fish_point))
+        #sprawdzac czy ryby ubywająz EQ
+        drag_drop(fish_point[0], width)
     else:
         print("Nie ma ryby")
+        #close window
 
-    cv.imwrite('fish.png', img_rgb)
+    #cv.imwrite('fish.png', img_rgb)
 
 def capture_video():
-    threading.Timer(1.0, capture_video).start()
-    print("Szukam ryby...")
-    img = pyautogui.screenshot()
-    frame = np.array(img)
-    frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-    find_fish(frame)
-    cv.destroyAllWindows()
+    global thread
+    thread = threading.Timer(1.0, capture_video)
+    thread.start()
+
+    if not isMouseMove:
+        print("Szukam ryby...")
+        img = pyautogui.screenshot()
+        frame = np.array(img)
+        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        find_fish(frame)
+        cv.destroyAllWindows()
+
+def drag_drop(fish, screen_width):
+    time.sleep(1)
+    #randomowy czas przesuwania
+    pyautogui.moveTo(fish[0],fish[1], 0.500)
+    time.sleep(0.500)
+    pyautogui.dragTo(screen_width-fish[0], fish[1], 0.300)
+    global isMouseMove
+    isMouseMove = False
+    #close_window
 
 if __name__ == '__main__':
     #check_frame()
     #find_fish()
     capture_video()
+    while True:
+        if keyboard.is_pressed('f9'):
+            print("pressed")
+            global thread
+            thread.cancel()
+            sys.exit(0)
+            quit()
+
+    #drag_drop()
