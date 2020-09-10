@@ -153,6 +153,7 @@ def drag_drop(fishes, screen_width):
         if fish_array == None:
             print("Nie ma wiecej ryb")
             isMouseMove = False
+            print("Zamykam okno")
             break
         elif(len(fish_array) == len(fishes)):
             cv.destroyAllWindows()
@@ -161,6 +162,9 @@ def drag_drop(fishes, screen_width):
             print("Ryba przeniesiona do bagaznika")
             isMouseMove = False
             break
+        #press E
+        print("Zamykam okno")
+        isMouseMove = False
 
 if __name__ == '__main__':
     capture_video()
