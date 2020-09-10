@@ -5,15 +5,13 @@ import keyboard
 import time
 import sys
 import pyautogui
-
-from pyautogui import press
+import random
 
 DIGITS_COUNT = 12
 FISH_COUNT = 3
 
-global isMouseMove, lastFishCount, thread
+global isMouseMove, thread
 isMouseMove = False
-lastFishCount = 0
 
 '''
 def check_trunk(frame):
@@ -84,9 +82,9 @@ def show_sequence(array):
         #return None
 '''
 
+
 def find_fish(frame):
     img_rgb = frame
-
     height, width, _ = img_rgb.shape
     cv.rectangle(img_rgb, (0, 0), (width, int(height / 4)), (255, 255, 255), -1)
     cv.rectangle(img_rgb, (0, 0), (int(width/4), height), (255, 255, 255), -1)
@@ -112,16 +110,12 @@ def find_fish(frame):
             cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 0)
             fish_point.append((pt[0], pt[1]))
 
+    cv.destroyAllWindows()
     if fish_point:
         fish_point.sort()
-        print("JEST RYBA DO PRZENIESIENIA "+str(len(fish_point))+str(fish_point))
-        #sprawdzac czy ryby ubywająz EQ
-        drag_drop(fish_point[0], width)
+        return fish_point
     else:
-        print("Nie ma ryby")
-        #close window
-
-    #cv.imwrite('fish.png', img_rgb)
+        return None
 
 def capture_video():
     global thread
@@ -133,29 +127,47 @@ def capture_video():
         img = pyautogui.screenshot()
         frame = np.array(img)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        find_fish(frame)
+        height, width, _ = frame.shape
+        fish = find_fish(frame)
+        if fish:
+            print("Znaleziono rybe/y: "+str(len(fish)))
+            drag_drop(fish, width)
+        else:
+            None
+
         cv.destroyAllWindows()
 
-def drag_drop(fish, screen_width):
-    time.sleep(1)
-    #randomowy czas przesuwania
-    pyautogui.moveTo(fish[0],fish[1], 0.500)
-    time.sleep(0.500)
-    pyautogui.dragTo(screen_width-fish[0], fish[1], 0.300)
+def drag_drop(fishes, screen_width):
     global isMouseMove
-    isMouseMove = False
-    #close_window
+    for fish in fishes:
+        cv.destroyAllWindows()
+        time.sleep(random.uniform(0.1, 0.3))
+        pyautogui.moveTo(fish[0], fish[1], random.uniform(0.100, 0.300))
+        time.sleep(random.uniform(0.1, 0.3))
+        pyautogui.dragTo(screen_width - fish[0], fish[1], random.uniform(0.100, 0.300))
+        img = pyautogui.screenshot()
+        frame = np.array(img)
+        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        height, width, _ = frame.shape
+        fish_array = find_fish(frame)
+        if fish_array == None:
+            print("Nie ma wiecej ryb")
+            isMouseMove = False
+            break
+        elif(len(fish_array) == len(fishes)):
+            cv.destroyAllWindows()
+            print("Ta ryba nie zmiesci sie do bagaznika")
+        else:
+            print("Ryba przeniesiona do bagaznika")
+            isMouseMove = False
+            break
 
 if __name__ == '__main__':
-    #check_frame()
-    #find_fish()
     capture_video()
     while True:
         if keyboard.is_pressed('f9'):
-            print("pressed")
             global thread
             thread.cancel()
             sys.exit(0)
             quit()
 
-    #drag_drop()
