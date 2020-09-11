@@ -1,5 +1,6 @@
 #press Z po przeniesieniu w bagazniku
 #otwieranie bagaznika co losowy połów
+#settings
 
 import cv2 as cv
 import numpy as np
@@ -18,15 +19,16 @@ DIGITS_COUNT = 12
 FISH_COUNT = 3
 
 TIME_MIN = 0.120
-TIME_MAX = 0.500
+TIME_MAX = 0.300
 TIME_Z_MIN = 7.5
 TIME_Z_MAX = 10.5
 
 
-global isSequence, isMouseMove, thread, isTrunk
+global isSequence, isMouseMove, thread, isTrunk, useAutoTrunk
 isSequence = False
 isMouseMove = False
 isTrunk = False
+useAutoTrunk = False
 
 def check_frame(frame):
     img_rgb = frame
@@ -92,7 +94,6 @@ def press_sequence(array):
     print("Otwieram bagażnik")
     time.sleep(2)
     isTrunk = True
-    isMouseMove = True
 
 def find_fish(frame):
     img_rgb = frame
@@ -106,7 +107,6 @@ def find_fish(frame):
     templ_shapes = []
     threshold = 0.99
     fish_point = []
-    global isMouseMove
 
     for i in range(FISH_COUNT):
         templates.append(cv.imread("img/fishes/{}.png".format(i+1), 0))
@@ -117,7 +117,6 @@ def find_fish(frame):
         loc = np.where(res >= threshold)
         w, h = template.shape[::-1]
         for pt in zip(*loc[::-1]):
-            isMouseMove = True
             cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 0)
             fish_point.append((pt[0], pt[1]))
 
@@ -129,15 +128,16 @@ def find_fish(frame):
         return None
 
 def drag_drop(fishes, screen_width):
-    time.sleep(random.uniform(2.3, 3.7))
-    print("wchodze do drag_drop")
+    #time_random = random.uniform(2.0, 2.5)
+    #time.sleep(time_random)
+    #print("wchodze do drag_drop po sekundach: "+str(time_random))
     global isMouseMove, isTrunk
     for fish in fishes:
         cv.destroyAllWindows()
-        time.sleep(random.uniform(0.1, 0.3))
-        pyautogui.moveTo(fish[0], fish[1], random.uniform(0.100, 0.300))
-        time.sleep(random.uniform(0.1, 0.3))
-        pyautogui.dragTo(screen_width - fish[0], fish[1], random.uniform(0.100, 0.300))
+        #time.sleep(random.uniform(0.1, 0.15))
+        pyautogui.moveTo(fish[0], fish[1], random.uniform(0.100, 0.150))
+        time.sleep(random.uniform(0.1, 0.150))
+        pyautogui.dragTo(screen_width - fish[0], fish[1], random.uniform(0.100, 0.150))
         img = pyautogui.screenshot()
         frame = np.array(img)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -145,6 +145,10 @@ def drag_drop(fishes, screen_width):
         fish_array = find_fish(frame)
         if fish_array == None:
             print(str(datetime.now())+"|Nie ma wiecej ryb")
+            press("e")
+            print(str(datetime.now()) + "|Zamykam bagażnik, bo jesty pusty (drag_drop)")
+            time.sleep(0.2)
+            isMouseMove = False
             isTrunk = False
             break
         elif(len(fish_array) == len(fishes)):
@@ -152,12 +156,9 @@ def drag_drop(fishes, screen_width):
             print("Ta ryba nie zmiesci sie do bagaznika")
         else:
             print(str(datetime.now())+"|Ryba przeniesiona do bagaznika")
-            isTrunk = False
+            drag_drop(fish_array, screen_width)
             break
-    press("e")
-    print(str(datetime.now())+"|Zamykam bagażnik, bo jesty pusty (drag_drop)")
-    isMouseMove = False
-    isTrunk = False
+
 
 def capture_video():
     global thread, isMouseMove, isTrunk
@@ -171,6 +172,7 @@ def capture_video():
         check_frame(frame)
 
     if isTrunk and not isMouseMove:
+        isMouseMove = True
         print(str(datetime.now())+"|Szukam ryby...")
         img = pyautogui.screenshot()
         frame = np.array(img)
