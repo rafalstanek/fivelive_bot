@@ -1,0 +1,10 @@
+{
+  "press_z_min": 7.5,
+  "press_z_max": 10.5,
+  "time_interval_min": 0.120,
+  "time_interval_max": 0.300,
+  "open_trunk_min": 4,
+  "open_trunk_max": 7,
+  "stop_program_key": "f9",
+  "open_trunk_after_next_fishing": "f10"
+}

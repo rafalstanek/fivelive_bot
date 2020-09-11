@@ -1,7 +1,5 @@
-#press Z po przeniesieniu w bagazniku
-#otwieranie bagaznika co losowy połów
 #settings
-
+import json
 import cv2 as cv
 import numpy as np
 import threading
@@ -18,12 +16,12 @@ LETTER_COUNT = 4
 DIGITS_COUNT = 12
 FISH_COUNT = 3
 
-TIME_MIN = 0.120
-TIME_MAX = 0.300
-TIME_Z_MIN = 7.5
-TIME_Z_MAX = 10.5
-TRUNK_MOVE_MIN = 4
-TRUNK_MOVE_MAX = 9
+#TIME_MIN = 0.120
+#TIME_MAX = 0.300
+#TIME_Z_MIN = 7.5
+#TIME_Z_MAX = 10.5
+#TRUNK_MOVE_MIN = 4
+#TRUNK_MOVE_MAX = 7
 
 
 global isSequence, isMouseMove, thread, isTrunk, useAutoTrunk, trunkCounter
@@ -145,12 +143,13 @@ def drag_drop(fishes, screen_width):
     #time.sleep(time_random)
     #print("wchodze do drag_drop po sekundach: "+str(time_random))
     global isMouseMove, isTrunk, trunkCounter
-    for fish in fishes:
+    for index, fish in enumerate(fishes):
         cv.destroyAllWindows()
         #time.sleep(random.uniform(0.1, 0.15))
         pyautogui.moveTo(fish[0], fish[1], random.uniform(0.100, 0.150))
         time.sleep(random.uniform(0.1, 0.150))
         pyautogui.dragTo(screen_width - fish[0], fish[1], random.uniform(0.100, 0.150))
+        time.sleep(random.uniform(0.1, 0.150))
         img = pyautogui.screenshot()
         frame = np.array(img)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -169,6 +168,16 @@ def drag_drop(fishes, screen_width):
         elif(len(fish_array) == len(fishes)):
             cv.destroyAllWindows()
             print(str(datetime.now())+"    Ryba nie zmiesci sie do bagaznika")
+            if(len(fish_array)-1 == index):
+                press("e")
+                print(str(datetime.now()) + "  Zamykam bagażnik, bo nie ma miejsca w samochodzie")
+                time.sleep(0.2)
+                isMouseMove = False
+                isTrunk = False
+                trunkCounter = random.randint(TRUNK_MOVE_MIN, TRUNK_MOVE_MAX)
+                print(str(datetime.now()) + "    Kolejne otwarcie bagażnika nastąpi po " + str(
+                    trunkCounter) + " połowach ryba")
+                break
         else:
             print(str(datetime.now())+"    Przeniesiono rybę do bagażnika")
             drag_drop(fish_array, screen_width)
@@ -211,17 +220,39 @@ def capture_video():
         cv.destroyAllWindows()
     cv.destroyAllWindows()
 
+def open_settings():
+    print(str(datetime.now()) + "    Ładowanie ustawień użytkownika...")
+    with open('settings.json') as f:
+        data = json.load(f)
+    global TRUNK_MOVE_MAX, TRUNK_MOVE_MIN, TIME_Z_MIN, TIME_Z_MAX, TIME_MIN, TIME_MAX, KEY_STOP, KEY_TRUNK
+    TIME_MIN = float(data["time_interval_min"])
+    TIME_MAX = float(data["time_interval_max"])
+    TIME_Z_MIN = float(data["press_z_min"])
+    TIME_Z_MAX = float(data["press_z_max"])
+    TRUNK_MOVE_MIN = int(data["open_trunk_min"])
+    TRUNK_MOVE_MAX = int(data["open_trunk_max"])
+    KEY_STOP = data["stop_program_key"]
+    KEY_TRUNK = data["open_trunk_after_next_fishing"]
+    print(str(datetime.now()) + "    Załadowano ustawienia")
+
 if __name__ == '__main__':
     print(str(datetime.now())+"    Rozpoczynam działanie programu...")
+    open_settings()
     trunkCounter = random.randint(TRUNK_MOVE_MIN,TRUNK_MOVE_MAX)
     print(str(datetime.now())+"    Pierwsze użycie bagażnika nastąpi po "+str(trunkCounter)+" połowach ryb")
     capture_video()
     while True:
-        if keyboard.is_pressed('f9'):
+        if keyboard.is_pressed(KEY_STOP):
             global thread
             thread.cancel()
+            if not isSequence and not isMouseMove and not isTrunk:
+                press("z")
             sys.exit(0)
             quit()
+        if keyboard.is_pressed(KEY_TRUNK):
+            trunkCounter=1
+            #print(str(datetime.now()) + "    Aktywowano uruchomienie bagażnika po kolejnym połowie")
+
 
 
 
