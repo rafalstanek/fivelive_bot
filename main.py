@@ -64,31 +64,37 @@ def show_sequence(array):
     array.sort()
     sequence_size = len(array)
     if(sequence_size>0):
-        print("Znaleziono ciag o dlugosci: "+str(sequence_size))
+        print(str(datetime.now())+"    Znaleziono sekwencję o dlugosci: "+str(sequence_size)+" znaków")
         global isSequence
         isSequence = True
         press_sequence(array)
 
 
 def press_sequence(array):
-    print("Wciskam sekwencje")
+    print(str(datetime.now())+"    Wciskam sekwencje...")
     global isSequence, isTrunk, trunkCounter
+    sequence_str = ""
     for letter in array:
         time.sleep(random.uniform(TIME_MIN, TIME_MAX))
         if letter[1]==1:
             press("a")
-            print("a")
+            sequence_str+="a "
+            #print("a")
         elif letter[1]==2:
             press("w")
-            print("w")
+            sequence_str += "w "
+            #print("w")
         elif letter[1]==3:
             press("d")
-            print("d")
+            sequence_str += "d "
+            #print("d")
         elif letter[1]==4:
             press("s")
-            print("s")
+            sequence_str += "s "
+            #print("s")
+    print(str(datetime.now())+"    Wpisano sekwencje: "+str(sequence_str))
     waitRandom = random.uniform(TIME_Z_MIN, TIME_Z_MAX)
-    print("Klikam Z za sekund: "+str(waitRandom))
+    print(str(datetime.now())+"    Rozpoczynam kolejny połów za: "+str(waitRandom)+" sekund")
     time.sleep(waitRandom)
     press("z")
     time.sleep(random.uniform(1.3, 3.7))
@@ -96,9 +102,11 @@ def press_sequence(array):
     trunkCounter = trunkCounter - 1
     if(trunkCounter==0):
         press("e")
-        print("Otwieram bagażnik")
+        print(str(datetime.now())+"    Otwieram bagażnik")
         time.sleep(2)
         isTrunk = True
+    else:
+        print(str(datetime.now()) + "    Bagażnik otworzy się za "+str(trunkCounter)+" połowów")
 
 def find_fish(frame):
     img_rgb = frame
@@ -149,20 +157,20 @@ def drag_drop(fishes, screen_width):
         height, width, _ = frame.shape
         fish_array = find_fish(frame)
         if fish_array == None:
-            print(str(datetime.now())+"|Nie ma wiecej ryb")
+            print(str(datetime.now())+"    Nie ma wiecej ryb w bagażniku")
             press("e")
-            print(str(datetime.now()) + "|Zamykam bagażnik, bo jesty pusty (drag_drop)")
+            print(str(datetime.now()) + "  Zamykam bagażnik, bo jesty pusty (drag_drop)")
             time.sleep(0.2)
             isMouseMove = False
             isTrunk = False
             trunkCounter = random.randint(TRUNK_MOVE_MIN, TRUNK_MOVE_MAX)
-            print("Użycie bagażnika po połowach: " + str(trunkCounter))
+            print(str(datetime.now())+"    Kolejne otwarcie bagażnika nastąpi po " + str(trunkCounter)+" połowach ryba")
             break
         elif(len(fish_array) == len(fishes)):
             cv.destroyAllWindows()
-            print("Ta ryba nie zmiesci sie do bagaznika")
+            print(str(datetime.now())+"    Ryba nie zmiesci sie do bagaznika")
         else:
-            print(str(datetime.now())+"|Ryba przeniesiona do bagaznika")
+            print(str(datetime.now())+"    Przeniesiono rybę do bagażnika")
             drag_drop(fish_array, screen_width)
             break
 
@@ -180,32 +188,33 @@ def capture_video():
 
     if isTrunk and not isMouseMove:
         isMouseMove = True
-        print(str(datetime.now())+"|Szukam ryby...")
+        print(str(datetime.now())+"    Szukam ryby w bagażniku...")
         img = pyautogui.screenshot()
         frame = np.array(img)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         height, width, _ = frame.shape
         fish = find_fish(frame)
         if fish:
-            print(str(datetime.now())+"|Znaleziono rybe/y: "+str(len(fish)))
+            print(str(datetime.now())+"    Znaleziono rybe/y: "+str(len(fish)))
             drag_drop(fish, width)
         else:
             if isTrunk:
                 press("e")
-                print(str(datetime.now())+"|Zamykam bagażnik, bo jest pusty")
+                print(str(datetime.now())+"    Zamykam bagażnik, bo jest pusty")
                 time.sleep(0.2)
                 isMouseMove = False
                 isTrunk = False
                 trunkCounter = random.randint(TRUNK_MOVE_MIN, TRUNK_MOVE_MAX)
-                print("Użycie bagażnika po połowach: " + str(trunkCounter))
+                print(str(datetime.now()) + "   Kolejne otwarcie bagażnika nastąpi po " + str(
+                    trunkCounter) + " połowach ryba")
 
         cv.destroyAllWindows()
     cv.destroyAllWindows()
 
 if __name__ == '__main__':
-    print(str(datetime.now())+"|Rozpoczynam działanie programu...")
+    print(str(datetime.now())+"    Rozpoczynam działanie programu...")
     trunkCounter = random.randint(TRUNK_MOVE_MIN,TRUNK_MOVE_MAX)
-    print("Pierwsze użycie bagażnika po połowach: "+str(trunkCounter))
+    print(str(datetime.now())+"    Pierwsze użycie bagażnika nastąpi po "+str(trunkCounter)+" połowach ryb")
     capture_video()
     while True:
         if keyboard.is_pressed('f9'):
