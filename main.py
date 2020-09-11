@@ -22,13 +22,16 @@ TIME_MIN = 0.120
 TIME_MAX = 0.300
 TIME_Z_MIN = 7.5
 TIME_Z_MAX = 10.5
+TRUNK_MOVE_MIN = 4
+TRUNK_MOVE_MAX = 9
 
 
-global isSequence, isMouseMove, thread, isTrunk, useAutoTrunk
+global isSequence, isMouseMove, thread, isTrunk, useAutoTrunk, trunkCounter
 isSequence = False
 isMouseMove = False
 isTrunk = False
 useAutoTrunk = False
+trunkCounter = 0
 
 def check_frame(frame):
     img_rgb = frame
@@ -69,7 +72,7 @@ def show_sequence(array):
 
 def press_sequence(array):
     print("Wciskam sekwencje")
-    global isSequence, isTrunk
+    global isSequence, isTrunk, trunkCounter
     for letter in array:
         time.sleep(random.uniform(TIME_MIN, TIME_MAX))
         if letter[1]==1:
@@ -90,10 +93,12 @@ def press_sequence(array):
     press("z")
     time.sleep(random.uniform(1.3, 3.7))
     isSequence=False
-    press("e")
-    print("Otwieram bagażnik")
-    time.sleep(2)
-    isTrunk = True
+    trunkCounter = trunkCounter - 1
+    if(trunkCounter==0):
+        press("e")
+        print("Otwieram bagażnik")
+        time.sleep(2)
+        isTrunk = True
 
 def find_fish(frame):
     img_rgb = frame
@@ -131,7 +136,7 @@ def drag_drop(fishes, screen_width):
     #time_random = random.uniform(2.0, 2.5)
     #time.sleep(time_random)
     #print("wchodze do drag_drop po sekundach: "+str(time_random))
-    global isMouseMove, isTrunk
+    global isMouseMove, isTrunk, trunkCounter
     for fish in fishes:
         cv.destroyAllWindows()
         #time.sleep(random.uniform(0.1, 0.15))
@@ -150,6 +155,8 @@ def drag_drop(fishes, screen_width):
             time.sleep(0.2)
             isMouseMove = False
             isTrunk = False
+            trunkCounter = random.randint(TRUNK_MOVE_MIN, TRUNK_MOVE_MAX)
+            print("Użycie bagażnika po połowach: " + str(trunkCounter))
             break
         elif(len(fish_array) == len(fishes)):
             cv.destroyAllWindows()
@@ -161,7 +168,7 @@ def drag_drop(fishes, screen_width):
 
 
 def capture_video():
-    global thread, isMouseMove, isTrunk
+    global thread, isMouseMove, isTrunk, trunkCounter
     thread = threading.Timer(1.0, capture_video)
     thread.start()
     if not isSequence and not isMouseMove and not isTrunk:
@@ -186,14 +193,19 @@ def capture_video():
             if isTrunk:
                 press("e")
                 print(str(datetime.now())+"|Zamykam bagażnik, bo jest pusty")
+                time.sleep(0.2)
                 isMouseMove = False
                 isTrunk = False
+                trunkCounter = random.randint(TRUNK_MOVE_MIN, TRUNK_MOVE_MAX)
+                print("Użycie bagażnika po połowach: " + str(trunkCounter))
 
         cv.destroyAllWindows()
     cv.destroyAllWindows()
 
 if __name__ == '__main__':
     print(str(datetime.now())+"|Rozpoczynam działanie programu...")
+    trunkCounter = random.randint(TRUNK_MOVE_MIN,TRUNK_MOVE_MAX)
+    print("Pierwsze użycie bagażnika po połowach: "+str(trunkCounter))
     capture_video()
     while True:
         if keyboard.is_pressed('f9'):
