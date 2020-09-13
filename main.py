@@ -1,4 +1,3 @@
-#settings
 import json
 import cv2 as cv
 import numpy as np
@@ -16,13 +15,8 @@ LETTER_COUNT = 4
 DIGITS_COUNT = 12
 FISH_COUNT = 3
 
-#TIME_MIN = 0.120
-#TIME_MAX = 0.300
-#TIME_Z_MIN = 7.5
-#TIME_Z_MAX = 10.5
-#TRUNK_MOVE_MIN = 4
-#TRUNK_MOVE_MAX = 7
-
+#sprawdzic przy otwarciu bagaznika ile zostalo pojemnosci, jesli mniej niż ileś to go nie otwierać
+#klikać Z po zamknieciu bagaznika
 
 global isSequence, isMouseMove, thread, isTrunk, useAutoTrunk, trunkCounter
 isSequence = False
@@ -69,6 +63,8 @@ def show_sequence(array):
 
 
 def press_sequence(array):
+    waitRandom = random.uniform(0.800, 1.90)
+    time.sleep(waitRandom)
     print(str(datetime.now())+"    Wciskam sekwencje...")
     global isSequence, isTrunk, trunkCounter
     sequence_str = ""
@@ -103,16 +99,17 @@ def press_sequence(array):
         print(str(datetime.now())+"    Otwieram bagażnik")
         time.sleep(2)
         isTrunk = True
+    elif(trunkCounter<0):
+        print(str(datetime.now()) + "    Otwieranie bagażnika zostało wyłączone")
     else:
         print(str(datetime.now()) + "    Bagażnik otworzy się za "+str(trunkCounter)+" połowów")
 
 def find_fish(frame):
     img_rgb = frame
     height, width, _ = img_rgb.shape
-    cv.rectangle(img_rgb, (0, 0), (width, int(height / 4)), (255, 255, 255), -1)
+    #cv.rectangle(img_rgb, (0, 0), (width, int(height / 4)), (255, 255, 255), -1)
     cv.rectangle(img_rgb, (0, 0), (int(width/4), height), (255, 255, 255), -1)
     cv.rectangle(img_rgb, (int(width/2), 0), (width,height), (255, 255, 255), -1)
-
     img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
     templates = []
     templ_shapes = []
@@ -148,7 +145,7 @@ def drag_drop(fishes, screen_width):
         #time.sleep(random.uniform(0.1, 0.15))
         pyautogui.moveTo(fish[0], fish[1], random.uniform(0.100, 0.150))
         time.sleep(random.uniform(0.1, 0.150))
-        pyautogui.dragTo(screen_width - fish[0], fish[1], random.uniform(0.100, 0.150))
+        pyautogui.dragTo(screen_width - fish[0], fish[1], random.uniform(DRAG_INTERVAL_MIN, DRAG_INTERVAL_MAX))
         time.sleep(random.uniform(0.1, 0.150))
         img = pyautogui.screenshot()
         frame = np.array(img)
@@ -224,7 +221,7 @@ def open_settings():
     print(str(datetime.now()) + "    Ładowanie ustawień użytkownika...")
     with open('settings.json') as f:
         data = json.load(f)
-    global TRUNK_MOVE_MAX, TRUNK_MOVE_MIN, TIME_Z_MIN, TIME_Z_MAX, TIME_MIN, TIME_MAX, KEY_STOP, KEY_TRUNK
+    global TRUNK_MOVE_MAX, TRUNK_MOVE_MIN, TIME_Z_MIN, TIME_Z_MAX, TIME_MIN, TIME_MAX, KEY_STOP, KEY_TRUNK, KEY_STOP_OPEN_TRUNK, DRAG_INTERVAL_MIN, DRAG_INTERVAL_MAX
     TIME_MIN = float(data["time_interval_min"])
     TIME_MAX = float(data["time_interval_max"])
     TIME_Z_MIN = float(data["press_z_min"])
@@ -233,6 +230,9 @@ def open_settings():
     TRUNK_MOVE_MAX = int(data["open_trunk_max"])
     KEY_STOP = data["stop_program_key"]
     KEY_TRUNK = data["open_trunk_after_next_fishing"]
+    KEY_STOP_OPEN_TRUNK = data["stop_open_trunk"]
+    DRAG_INTERVAL_MIN = float(data["drag_interval_min"])
+    DRAG_INTERVAL_MAX = float(data["drag_interval_max"])
     print(str(datetime.now()) + "    Załadowano ustawienia")
 
 if __name__ == '__main__':
@@ -251,6 +251,9 @@ if __name__ == '__main__':
             quit()
         if keyboard.is_pressed(KEY_TRUNK):
             trunkCounter=1
+            #print(str(datetime.now()) + "    Aktywowano uruchomienie bagażnika po kolejnym połowie")
+        if keyboard.is_pressed(KEY_STOP_OPEN_TRUNK):
+            trunkCounter=-1
             #print(str(datetime.now()) + "    Aktywowano uruchomienie bagażnika po kolejnym połowie")
 
 
