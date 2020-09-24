@@ -8,6 +8,7 @@ import keyboard
 import random
 from datetime import datetime
 import pyautogui
+from playsound import playsound
 
 global WEED_COUNT, KEY_START_PROGRAM, KEY_STOP_PROGRAM, isProgramStarted
 
@@ -40,6 +41,7 @@ def find_button_position():
 
 def click_button(posX, posY, weed_count):
     counter = int(weed_count/2)
+
     global WEED_COUNT
     while(isProgramStared and counter>0):
         posX_offset = random.randint(-5,5)
@@ -49,6 +51,8 @@ def click_button(posX, posY, weed_count):
         time.sleep(random.uniform(5.5, 5.9))
         counter-=1
         WEED_COUNT = counter
+        if(counter==2):
+            playsound("sounds/sound.mp3")
 
 def open_settings():
     print(str(datetime.now()) + "    Ładowanie ustawień użytkownika...")
