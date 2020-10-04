@@ -33,18 +33,19 @@ def find_isTunner():
 
         if(not isTunner):
             print("JEST TUNNER!")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
-            playsound("sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
+            playsound("sounds/sound.mp3")
         else:
             cv.destroyAllWindows()
             print("Nie ma tunera")
@@ -58,28 +59,24 @@ def find_isTunner():
         find_isTunner()
 
 
-
-
-
-
 def open_settings():
     print(str(datetime.now()) + "    Ładowanie ustawień użytkownika...")
     with open('settings.json') as f:
         data = json.load(f)
     global WEED_COUNT, KEY_START_PROGRAM, KEY_STOP_PROGRAM
     WEED_COUNT = float(data["weed"])
-    KEY_START_PROGRAM = data["stop_program_key"]
+    KEY_START_PROGRAM = data["resume_program_key"]
     KEY_STOP_PROGRAM = data["open_trunk_after_next_fishing"]
     print(str(datetime.now()) + "    Załadowano ustawienia")
 
 if __name__ == '__main__':
     print(str(datetime.now()) + "    Rozpoczynam działanie programu...")
     global isProgramStarted
-    isProgramStared=False
+    isProgramStarted=False
     open_settings()
     while True:
-        if keyboard.is_pressed(KEY_START_PROGRAM) and not isProgramStared:
-            isProgramStared = True
+        if keyboard.is_pressed(KEY_START_PROGRAM) and not isProgramStarted:
+            isProgramStarted = True
             print("Włączam clickera...")
             find_isTunner()
 

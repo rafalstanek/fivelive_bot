@@ -10,7 +10,7 @@ from datetime import datetime
 import pyautogui
 from playsound import playsound
 
-global WEED_COUNT, KEY_START_PROGRAM, KEY_STOP_PROGRAM, isProgramStarted
+global WEED_COUNT, KEY_START_PROGRAM, KEY_STOP_PROGRAM
 
 def find_button_position():
     img = pyautogui.screenshot()
@@ -30,53 +30,72 @@ def find_button_position():
         posX = pt[0]+int(w/2)
         posY = pt[1]+int(h/2)
 
-    global isProgramStared
-
+    global isProgramStarted
     if(posX > -1 and posY >-1):
+        isProgramStarted = True
         click_button(posX, posY, WEED_COUNT)
-        isProgramStared = True
     else:
-        isProgramStared=False
-        print("Wejdź w pole 'Tworzenie' i uruchom program")
+        isProgramStarted=False
+        print(str(datetime.now()) + "    Wejdź w pole 'Tworzenie' i uruchom program")
+        time.sleep(0.500)
 
 def click_button(posX, posY, weed_count):
     counter = int(weed_count/2)
-
-    global WEED_COUNT
-    while(isProgramStared and counter>0):
-        posX_offset = random.randint(-5,5)
-        posY_offset = random.randint(-3,3)
-        pyautogui.moveTo(posX+posX_offset,posY+posY_offset,0)
-        pyautogui.click()
-        time.sleep(random.uniform(5.5, 5.9))
-        counter-=1
-        WEED_COUNT = counter
-        if(counter==2):
-            playsound("sounds/sound.mp3")
+    print(str(datetime.now()) + "    Rozpoczęto proces suszenia, po którym otrzymasz "+str(counter)+" suszu...")
+    global WEED_COUNT, isProgramStarted
+    start = time.perf_counter()
+    time_interval = random.uniform(5.5, 5.9)
+    isProgramEndedByUser = False
+    while(isProgramStarted and counter > 0):
+        if (time.perf_counter()-start>time_interval):
+            print("CLICK")
+            posX_offset = random.randint(-5,5)
+            posY_offset = random.randint(-3,3)
+            pyautogui.moveTo(posX+posX_offset,posY+posY_offset,0)
+            pyautogui.click()
+            start = time.perf_counter()
+            counter-=1
+            WEED_COUNT = counter
+            if(counter==2): #w settingsach kiedy warning
+                playsound("sounds/sound.mp3")
+        if (keyboard.is_pressed("f10")):
+            isProgramEndedByUser=True
+            break
+    isProgramStarted = False
+    if(isProgramEndedByUser):
+        print(str(datetime.now()) + "    Zatrzymano program, aby uruchomić ponownie kliknij F9")
+    else:
+        print(str(datetime.now()) + "    Wysuszono wszystkie plony, aby rozpocząć ponownie klknij F9.")
 
 def open_settings():
-    print(str(datetime.now()) + "    Ładowanie ustawień użytkownika...")
-    with open('settings.json') as f:
-        data = json.load(f)
-    global WEED_COUNT, KEY_START_PROGRAM, KEY_STOP_PROGRAM
-    WEED_COUNT = float(data["weed"])
-    KEY_START_PROGRAM = data["stop_program_key"]
-    KEY_STOP_PROGRAM = data["open_trunk_after_next_fishing"]
-    print(str(datetime.now()) + "    Załadowano ustawienia")
+    try:
+        print(str(datetime.now()) + "    Ładowanie ustawień użytkownika...")
+        with open('settings.json') as f:
+            data = json.load(f)
+        global WEED_COUNT, KEY_START_PROGRAM, KEY_STOP_PROGRAM
+        WEED_COUNT = float(data["weed"])
+        KEY_START_PROGRAM = data["resume_program_key"]
+        KEY_STOP_PROGRAM = data["open_trunk_after_next_fishing"]
+    except:
+        print(str(
+            datetime.now()) + "    Nie udało się załadować ustawień użytkownika. Sprawdź, czy posiadasz plik 'settings.json'.")
+    else:
+        print(str(datetime.now()) + "    Załadowano ustawienia")
 
 if __name__ == '__main__':
     print(str(datetime.now()) + "    Rozpoczynam działanie programu...")
+    pyautogui.FAILSAFE = False
     global isProgramStarted
-    isProgramStared=False
+    isProgramStarted=False
     open_settings()
     while True:
-        if keyboard.is_pressed(KEY_START_PROGRAM) and not isProgramStared:
-            isProgramStared = True
-            print("Włączam clickera...")
+        if (keyboard.is_pressed(KEY_START_PROGRAM)) and (not isProgramStarted):
+            isProgramStarted = True
+            open_settings()
             find_button_position()
-        if isProgramStared and keyboard.is_pressed("]"):
-            print("Wyłączam clickera...")
-            isProgramStared = False
+
+
+
 
 
 

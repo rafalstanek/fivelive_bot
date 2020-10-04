@@ -10,7 +10,7 @@
   "stop_open_trunk": "f11",
   "drag_interval_min": 0.100,
   "drag_interval_max": 0.150,
-  "weed": 100,
+  "weed": 8,
   "play_sound": true,
   "save_log": true
 }

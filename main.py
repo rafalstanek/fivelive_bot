@@ -257,6 +257,7 @@ if __name__ == '__main__':
     else:
         print(str(datetime.now()) + "    Załadowano ustawienia")
 
+    pyautogui.FAILSAFE = False
     trunkCounter = random.randint(TRUNK_MOVE_MIN,TRUNK_MOVE_MAX)
     print(str(datetime.now())+"    Pierwsze użycie bagażnika nastąpi po "+str(trunkCounter)+" połowach ryb")
     capture_video()
